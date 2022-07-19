@@ -34,7 +34,7 @@ mface.sparse(data, newdata = NULL,
   logical. If TRUE, then Pspline smoothing of the population mean will be conducted and subtracted from the data before covariance smoothing; if FALSE, then the population mean will be just 0s.
 }
   \item{argvals.new}{
-  a vector of observation time points to evaluate mean function, covariance function, error variance and etc. .
+  a vector of observation time points to evaluate mean function, covariance function, error variance and etc. If NULL, then 100 equidistant points in the range of data time points will be used.
 }
   \item{knots}{
  the number of knots for B-spline basis functions to be used; defaults to 7.
@@ -95,7 +95,7 @@ If knots.option is "equally-spaced", then the differencing penalty in Eilers and
 \item{Chat.new,Cor.new,Cor.raw.new,Chat.raw.diag.new,var.error.new}{Estimated objects at \code{argvals.new}}
 \item{eigenfunctions, eigenvalues}{Estimated eigenfunctions (scaled eigenvector) and eigenvalues at \code{argvals.new}}
 \item{var.error.hat}{Estimated objects for each outcome}
-\item{calculate.scores,scores}{if \code{calculate.scores} is TRUE (default to FALSE) and \code{newdata} is not NULL, then predicted scores will be calculated.}
+\item{calculate.scores,rand_eff}{if \code{calculate.scores} is TRUE (default to FALSE), then predicted scores \code{rand_eff$scores} will be calculated.}
 \item{\dots}{\dots}
 }
 \references{
@@ -103,7 +103,7 @@ Cai Li, Luo Xiao, and Sheng Luo, 2020. Fast covariance estimation for multivaria
 \doi{10.1002/sta4.245}.
 
 Luo Xiao, Cai Li, William Checkley and Ciprian Crainiceanu, Fast covariance estimation
-for sparse functional data, Stat. Comput., \doi{doi:10.1007/s11222-017-9744-8}.
+for sparse functional data, Stat. Comput., \doi{10.1007/s11222-017-9744-8}.
 
 Paul Eilers and Brian  Marx, Multivariate calibration with temperature
 interaction using two-dimensional penalized signal regression,
@@ -222,6 +222,11 @@ data <- list("y1" = data.frame("subj"= subj1, "argvals" = t1, "y" = y1),
              "y3" = data.frame("subj"= subj3, "argvals" = t3, "y" = y3)) 
 fit <- mface.sparse(data, argvals.new = tnew, knots = 5)
 
+\donttest{
+## set calculate.scores to TRUE if want to get scores
+fit <- mface.sparse(data, argvals.new = tnew, knots = 5, calculate.scores = TRUE)
+scores <- fit$rand_eff$scores
+}
 
 ## prediction of several subjects
 for(i in 1:2){

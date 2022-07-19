@@ -15,7 +15,17 @@ mface.sparse <- function(data, newdata = NULL, center = TRUE, argvals.new = NULL
   ####step 0: read in data
   #########################
   
+  if(!is.list(data)){
+    stop("'data' should be a list of data frames with three variables:argvals,subj and y")
+  }
   tnew <- argvals.new
+  if(is.null(tnew)){
+    if(any(unlist(lapply(data, function(x){is.null(x$argvals)})))){
+      stop("'data' should be a list of data frames with three variables:argvals,subj and y")
+    }
+    temp_t = unlist(lapply(data, function(x){range(x$argvals)}))
+    tnew <- seq(min(temp_t), max(temp_t), length=100)
+  }
   p.m = p ## this is splines degree
   p <- length(data) ## dimension of the multivariate functional data
   
@@ -62,7 +72,7 @@ mface.sparse <- function(data, newdata = NULL, center = TRUE, argvals.new = NULL
   # sigma2[k] <- object[[k]]$sigma2
   var.error.hat[[k]] <- object[[k]]$var.error.hat
   var.error.new[[k]] <- object[[k]]$var.error.new
-  if(!is.null(newdata)) {
+  if(!is.null(newdata) || calculate.scores == T) {
     mu.pred[[k]] <- object[[k]]$mu.pred
     var.error.pred[[k]] <- object[[k]]$var.error.pred
     Bi[[k]] <- lapply(1:length(object[[k]]$Bi),function(x) object[[k]]$Bi[[x]]%*%G_invhalf)
@@ -169,7 +179,9 @@ mface.sparse <- function(data, newdata = NULL, center = TRUE, argvals.new = NULL
  #######################
  ####step 6: prediction
  #######################
- 
+ if(is.null(newdata) && calculate.scores==T){
+   newdata = data
+ }
  if(!is.null(newdata)){
  
    subj.pred = lapply(newdata, function(x) {x$subj})
@@ -295,10 +307,10 @@ mface.sparse <- function(data, newdata = NULL, center = TRUE, argvals.new = NULL
              Cor.raw.new = Cor.raw.new,
              y.pred = y.pred, mu.pred = mu.pred, var.error.pred = var.error.pred, 
              Chat.diag.pred = Chat.diag.pred, 
-             se.pred = se.pred, scores = scores,
+             se.pred = se.pred, rand_eff = scores,
              G_invhalf = G_invhalf, bps.lambda = bps.lambda, 
              U = Eig$vectors[,1:npc], 
-             argvals.new = argvals.new,
+             argvals.new = tnew,
              center=center, knots=knots, knots.option = knots.option,
              p = p.m, m = m,
              lower=lower,upper=upper,search.length=search.length,
